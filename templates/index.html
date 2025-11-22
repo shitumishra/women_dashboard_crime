@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Crime Dashboard — Dark Mode</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+  <style>
+    /* ---------- DARK THEME ---------- */
+    :root {
+      --bg: #0b132b;
+      --card: #1c2541;
+      --accent1: #3a86ff;
+      --accent2: #ef476f;
+      --text: #e0e6ed;
+      --muted: #9fb3c8;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Poppins", system-ui, sans-serif;
+      padding: 25px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 10px;
+      color: var(--accent1);
+      font-weight: 600;
+    }
+
+    p.text-center.text-muted {
+      color: var(--muted) !important;
+      font-size: 14px;
+    }
+
+    .form-label {
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .form-select {
+      background-color: var(--card);
+      color: var(--text);
+      border: 1px solid #2b3b56;
+    }
+
+    .form-select:focus {
+      border-color: var(--accent1);
+      box-shadow: 0 0 0 0.2rem rgba(58,134,255,0.25);
+    }
+
+    /* ---------- CHART CARDS ---------- */
+    .chart {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 25px;
+      box-shadow: 0 6px 14px rgba(0,0,0,0.5);
+      min-height: 400px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .chart:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 22px rgba(0,0,0,0.65);
+    }
+
+    /* Space between charts */
+    .chart + .chart {
+      margin-left: 15px;
+    }
+
+    @media (max-width: 992px) {
+      .chart + .chart {
+        margin-left: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Crime Against Women — Dashboard</h1>
+    <p class="text-center text-muted">Interactive Data Visualization</p>
+
+    <!-- Dropdown Filters -->
+    <div class="row mb-4">
+      <div class="col-md-6">
+        <label for="year" class="form-label">Select Year:</label>
+        <select id="year" class="form-select">
+          <option value="All" selected>All</option>
+          {% for y in years %}
+            <option value="{{ y }}">{{ y }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label for="state" class="form-label">Select State:</label>
+        <select id="state" class="form-select">
+          <option value="All" selected>All</option>
+          {% for s in states %}
+            <option value="{{ s }}">{{ s }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <!-- Two Charts Side-by-Side -->
+    <div class="row">
+      <div class="col-md-6">
+        <div class="chart" id="chart-year">Loading Year Chart...</div>
+      </div>
+      <div class="col-md-6">
+        <div class="chart" id="chart-state">Loading State Chart...</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function updateYearChart() {
+      $.post("/update_year", { year: $("#year").val() }, function(data) {
+        $("#chart-year").html(data.plot_html);
+      }).fail(function(xhr, status, err) {
+        $("#chart-year").html("<div class='p-3 text-danger'>Error loading year chart: " + err + "</div>");
+      });
+    }
+
+    function updateStateChart() {
+      $.post("/update_state", { state: $("#state").val() }, function(data) {
+        $("#chart-state").html(data.plot_html);
+      }).fail(function(xhr, status, err) {
+        $("#chart-state").html("<div class='p-3 text-danger'>Error loading state chart: " + err + "</div>");
+      });
+    }
+
+    $(document).ready(function() {
+      updateYearChart();
+      updateStateChart();
+
+      $("#year").change(updateYearChart);
+      $("#state").change(updateStateChart);
+    });
+  </script>
+</body>
+</html>
